@@ -68,7 +68,8 @@ public final class MachOObjectFile extends ObjectFile {
     private static final ByteOrder nativeOrder = ByteOrder.nativeOrder();
     private static final ByteOrder oppositeOrder = (nativeOrder == ByteOrder.BIG_ENDIAN) ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN;
 
-    MachOCpuType cpuType = MachOCpuType.X86_64; // FIXME: smarter defaults
+   // MachOCpuType cpuType = MachOCpuType.X86_64; // FIXME: smarter defaults
+    MachOCpuType cpuType = MachOCpuType.AARCH64;
 
     int cpuSubType = 3; // FIXME: what does this mean? + smarter defaults?
 

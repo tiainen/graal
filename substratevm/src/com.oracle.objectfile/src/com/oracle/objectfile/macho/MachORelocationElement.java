@@ -67,17 +67,22 @@ class MachORelocationElement extends MachOObjectFile.LinkEditElement {
     }
 
     public void add(RelocationInfo rec) {
+        System.out.println("[JVDBG] ADD RELOC1");
         if (infos.putIfAbsent(rec, rec) == null) {
             relocatedSections.add(rec.getRelocatedSection());
         }
     }
 
     public boolean relocatesSegment(Segment64Command seg) {
+        System.out.println("[JVDBG] ADD RELOC2");
+        Thread.dumpStack();
         return seg.elementsInSegment.stream().anyMatch(e -> e instanceof MachOSection && relocatedSections.contains(e));
     }
 
     @Override
     public byte[] getOrDecideContent(Map<Element, LayoutDecisionMap> alreadyDecided, byte[] contentHint) {
+
+        System.out.println("[JVDBG] ADD RELOC3");
         OutputAssembler out = AssemblyBuffer.createOutputAssembler(getOwner().getByteOrder());
         for (RelocationInfo rec : infos.keySet()) {
             rec.write(out, alreadyDecided);
@@ -131,6 +136,27 @@ enum X86_64Reloc {
     SIGNED_2,
     SIGNED_4,
     TLV;
+
+    public int getValue() {
+        return ordinal();
+    }
+}
+enum AARCH64Reloc {
+    /*
+     * These are defined as an enum in /usr/include/mach-o/arm64/reloc.h, which we reproduce. Of
+     * course, take care to preserve the order!
+     */
+    UNSIGNED,
+    SUBTRACTOR,
+    BRANCH26,
+    PAGE21,
+    PAGEOFF12,
+    GOT_LOAD_PAGE21,
+    GOT_LOAD_PAGEOFF12,
+    POINTER_TO_GOT,
+    TLVP_LOAD_PAGE21,
+    TLVP_LOAD_PAGEOFF12,
+    ADDEND;
 
     public int getValue() {
         return ordinal();
@@ -190,6 +216,8 @@ final class RelocationInfo implements RelocationRecord, RelocationMethod {
     }
 
     public void write(OutputAssembler oa, @SuppressWarnings("unused") Map<Element, LayoutDecisionMap> alreadyDecided) {
+
+       // System.out.println("[JVDBG] ADD RELOC4");
         /* We need to convert in-section offsets to vaddrs if we are writing dynamic object. */
         // "extern" means symbolNum is a symbol not a section number
         int symbolNum;
@@ -278,6 +306,18 @@ final class RelocationInfo implements RelocationRecord, RelocationMethod {
     private int getMachORelocationType() {
         switch (getRelocatedSection().getOwner().cpuType) {
             case X86_64:
+                switch (kind) {
+                    case DIRECT:
+                        return X86_64Reloc.UNSIGNED.getValue();
+                    case PC_RELATIVE:
+                        return X86_64Reloc.SIGNED.getValue();
+                    case PROGRAM_BASE:
+                        throw new IllegalArgumentException("Mach-O does not support PROGRAM_BASE relocations");
+                    default:
+                    case UNKNOWN:
+                        throw new IllegalArgumentException("unknown relocation kind: " + kind);
+                }
+            case AARCH64:
                 switch (kind) {
                     case DIRECT:
                         return X86_64Reloc.UNSIGNED.getValue();
