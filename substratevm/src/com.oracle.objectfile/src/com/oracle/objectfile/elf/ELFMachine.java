@@ -45,6 +45,12 @@ public enum ELFMachine/* implements Integral */ {
             return ELFX86_64Relocation.class;
         }
     },
+    AARCH64 {
+        @Override
+        Class<? extends Enum<? extends RelocationMethod>> relocationTypes() {
+            return ELFAARCH64Relocation.class;
+        }
+    },
     CAVA {
         @Override
         Class<? extends Enum<? extends RelocationMethod>> relocationTypes() {
@@ -116,6 +122,9 @@ public enum ELFMachine/* implements Integral */ {
                     default:
                         throw new RuntimeException(k.toString());
                 }
+            case AARCH64:
+                System.out.println("RELOCATION needed for "+k);
+                throw new RuntimeException("AARCH64 Not yet implemented");
             default:
             case NONE:
                 return ELFDummyRelocation.R_NONE;
@@ -124,19 +133,26 @@ public enum ELFMachine/* implements Integral */ {
 
     // TODO: use explicit enum values
     public static ELFMachine from(int m) {
+        System.out.println("[JVDBG] ELF FROM asked! "+m);
+        Thread.dumpStack();
         switch (m) {
             case 0:
                 return NONE;
             case 62:
                 return X86_64;
+            case 183:
+                return AARCH64;
             default:
                 throw new IllegalStateException("unknown ELF machine type");
         }
     }
 
     public short toShort() {
+        System.out.println("[JVDBG] ELF toshort, this = "+this);
         if (this == NONE) {
             return (short) 0;
+        } else if (this == AARCH64) {
+            return 183;
         } else if (this == X86_64) {
             return 62;
         } else if (this == CAVA) {
@@ -146,9 +162,11 @@ public enum ELFMachine/* implements Integral */ {
         }
     }
 
+//    public static ELFMachine getSystemNativeValue() {return X86_64; // FIXME: query system}
     public static ELFMachine getSystemNativeValue() {
-        return X86_64; // FIXME: query system
+        return AARCH64; // FIXME: query system
     }
+
 }
 
 enum ELFDummyRelocation implements ELFRelocationMethod {
@@ -347,6 +365,48 @@ enum ELFX86_64Relocation implements ELFRelocationMethod {
     @Override
     public int getRelocatedByteSize() {
         throw new UnsupportedOperationException(); // better safe than sorry
+    }
+}
+
+enum ELFAARCH64Relocation implements ELFRelocationMethod {
+
+    R_NONE(256),
+    R_ABS64(257),
+    R_ABS32(258),
+    R_ABS16(259),
+    R_PREL64(260),
+    R_PREL32(261),
+    R_PREL16(262);
+
+    private final int id;
+
+    ELFAARCH64Relocation(int id) {
+        this.id = id;
+    }
+
+    @Override
+    public long toLong() {
+        return id;
+    }
+
+    @Override
+    public RelocationKind getKind() {
+        throw new RuntimeException("NYI");
+    }
+
+    @Override
+    public boolean canUseImplicitAddend() {
+        throw new RuntimeException("NYI");
+    }
+
+    @Override
+    public boolean canUseExplicitAddend() {
+        throw new RuntimeException("NYI");
+    }
+
+    @Override
+    public int getRelocatedByteSize() {
+        throw new RuntimeException("NYI");
     }
 }
 
