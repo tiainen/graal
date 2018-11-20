@@ -123,7 +123,22 @@ public enum ELFMachine/* implements Integral */ {
                         throw new RuntimeException(k.toString());
                 }
             case AARCH64:
-                System.out.println("RELOCATION needed for "+k);
+                System.out.println("RELOCATION needed for "+k+" and size = "+sizeInBytes);
+                switch (k) {
+                    case PC_RELATIVE:
+                        switch (sizeInBytes) {
+                            case 4:
+                                return ELFAARCH64Relocation.R_PREL32;
+                            default:
+                                throw new RuntimeException ("PC_REL for "+sizeInBytes+" not yet implemented");
+
+                        }
+                    case DIRECT:
+                        switch (sizeInBytes) {
+                            case 8:
+                                return ELFAARCH64Relocation.R_ABS64;
+                        }
+                }
                 throw new RuntimeException("AARCH64 Not yet implemented");
             default:
             case NONE:
@@ -395,13 +410,13 @@ enum ELFAARCH64Relocation implements ELFRelocationMethod {
     }
 
     @Override
-    public boolean canUseImplicitAddend() {
-        throw new RuntimeException("NYI");
+    public boolean canUseExplicitAddend() {
+        return true;
     }
 
     @Override
-    public boolean canUseExplicitAddend() {
-        throw new RuntimeException("NYI");
+    public boolean canUseImplicitAddend() {
+        return true;
     }
 
     @Override
