@@ -529,6 +529,8 @@ public class ELFObjectFile extends ObjectFile {
             }
 
             public void write(OutputAssembler out) {
+                System.out.println("[JVDBG] ELFOUT WRITE\n\n\n");
+                Thread.dumpStack();
                 ident.write(out);
                 // FIXME: the following is specific to 64-bit ELF files
                 out.write2Byte(type.toShort());
@@ -568,7 +570,8 @@ public class ELFObjectFile extends ObjectFile {
         public ELFHeader(String name) { // create an "empty" default ELF header
             super(name);
             // FIXME: is it really appropriate to initialize the owning ELFObjectFile's fields here?
-            ELFObjectFile.this.machine = ELFMachine.X86_64;
+            ELFObjectFile.this.machine = ELFMachine.getSystemNativeValue();
+//            ELFObjectFile.this.machine = ELFMachine.X86_64;
             ELFObjectFile.this.version = 1;
             ELFObjectFile.this.processorSpecificFlags = 0;
         }
