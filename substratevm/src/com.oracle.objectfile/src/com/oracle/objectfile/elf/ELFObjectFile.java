@@ -417,11 +417,11 @@ public class ELFObjectFile extends ObjectFile {
         }
 
         public static ELFOsAbi getSystemNativeValue() {
-            System.out.println("[JVDBG] ABI asked");
-            if ("arm32".equals(System.getenv("target"))) {
-                System.out.println("return armeabi");
-                return ELFOSABI_ARM_AEABI;
-            }
+            System.out.println("[JVDBG] ABI asked, always return sysv (0)");
+//            if ("arm32".equals(System.getenv("target"))) {
+//                System.out.println("return armeabi");
+//                return ELFOSABI_ARM_AEABI;
+//            }
             return ELFOSABI_SYSV; // FIXME: query system
         }
     }
@@ -469,7 +469,7 @@ public class ELFObjectFile extends ObjectFile {
             long entry;
             long phoff;
             long shoff;
-            int flags;
+            private int flags;
             short ehsize;
             short phentsize;
             short phnum;
@@ -511,6 +511,7 @@ public class ELFObjectFile extends ObjectFile {
                 }
 
                 void write(OutputAssembler out) {
+                    System.out.println("[JVDBG] IDENTSTRUCT NEED TO WRITE, abiversion = "+abiVersion);
                     int pos = out.pos();
 
                     byte[] magicBlob = new byte[IDENT_MAGIC.length];
@@ -538,9 +539,9 @@ public class ELFObjectFile extends ObjectFile {
             }
 
             public void write(OutputAssembler out) {
-                System.out.println("[JVDBG] ELFOUT WRITE\n\n\n");
-                System.out.println("[JVDBG] type = "+type+", machine = "+machine+", version = "+version);
-                Thread.dumpStack();
+                if ("arm32".equals(System.getenv("target"))) {
+                    flags = 5 << 24; //ARMEABI5
+                }
                 ident.write(out);
                 // FIXME: the following is specific to 64-bit ELF files
                 out.write2Byte(type.toShort());
@@ -1095,20 +1096,21 @@ public class ELFObjectFile extends ObjectFile {
     }
 
     public char getVersion() {
-        System.out.println("[JVDBG] getVersion called, return "+version);
+        System.out.println("[JVDBG] getVersion called, return "+(int)version);
         Thread.dumpStack();
 
         return version;
     }
 
     public ELFOsAbi getOsAbi() {
+        System.out.println("[JVDBG] GETosAbi called, return "+osabi);
         return osabi;
     }
 
     public int getAbiVersion() {
-        System.out.println("[JVDBG] GETABIVERSION asked");
+        System.out.println("[JVDBG] GETABIVERSION asked, return "+abiVersion);
         Thread.dumpStack();
-        return 5;//abiVersion;
+        return abiVersion;
     }
 
     public ELFClass getFileClass() {
