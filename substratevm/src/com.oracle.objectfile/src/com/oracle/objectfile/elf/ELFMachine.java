@@ -51,6 +51,12 @@ public enum ELFMachine/* implements Integral */ {
             return ELFAARCH64Relocation.class;
         }
     },
+    ARM32 {
+        @Override
+        Class<? extends Enum<? extends RelocationMethod>> relocationTypes() {
+            return ELFARM32Relocation.class;
+        }
+    },
     CAVA {
         @Override
         Class<? extends Enum<? extends RelocationMethod>> relocationTypes() {
@@ -155,6 +161,8 @@ public enum ELFMachine/* implements Integral */ {
                 return NONE;
             case 62:
                 return X86_64;
+            case 40:
+                return ARM32;
             case 183:
                 return AARCH64;
             default:
@@ -166,6 +174,8 @@ public enum ELFMachine/* implements Integral */ {
         System.out.println("[JVDBG] ELF toshort, this = "+this);
         if (this == NONE) {
             return (short) 0;
+        } else if (this == ARM32) {
+            return 40;
         } else if (this == AARCH64) {
             return 183;
         } else if (this == X86_64) {
@@ -179,7 +189,11 @@ public enum ELFMachine/* implements Integral */ {
 
 //    public static ELFMachine getSystemNativeValue() {return X86_64; // FIXME: query system}
     public static ELFMachine getSystemNativeValue() {
-        return AARCH64; // FIXME: query system
+        // return AARCH64; // FIXME: query system
+        if ("arm32".equals(System.getenv("target"))) {
+            return ARM32;
+        }
+        return X86_64;
     }
 
 }
@@ -380,6 +394,50 @@ enum ELFX86_64Relocation implements ELFRelocationMethod {
     @Override
     public int getRelocatedByteSize() {
         throw new UnsupportedOperationException(); // better safe than sorry
+    }
+}
+
+enum ELFARM32Relocation implements ELFRelocationMethod {
+
+    R_NONE(0),
+    R_PC24(1),
+    R_ABS32(2),
+    R_REL32(3),
+    R_PC13(4),
+    R_ABS16(5),
+    R_ABS12(6),
+    R_THM_ABS5(7),
+    R_ARM_ABS8(8);
+
+    private final int id;
+
+    ELFARM32Relocation(int id) {
+        this.id = id;
+    }
+
+    @Override
+    public long toLong() {
+        return id;
+    }
+
+    @Override
+    public RelocationKind getKind() {
+        throw new RuntimeException("NYI");
+    }
+
+    @Override
+    public boolean canUseExplicitAddend() {
+        return true;
+    }
+
+    @Override
+    public boolean canUseImplicitAddend() {
+        return true;
+    }
+
+    @Override
+    public int getRelocatedByteSize() {
+        throw new RuntimeException("NYI");
     }
 }
 

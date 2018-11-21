@@ -403,6 +403,7 @@ public class ELFObjectFile extends ObjectFile {
     public enum ELFOsAbi {
         ELFOSABI_SYSV(0),
         ELFOSABI_HPUX(1),
+        ELFOSABI_ARM_AEABI(64),
         ELFOSABI_STANDALONE(255);
 
         private final int value;
@@ -416,6 +417,11 @@ public class ELFObjectFile extends ObjectFile {
         }
 
         public static ELFOsAbi getSystemNativeValue() {
+            System.out.println("[JVDBG] ABI asked");
+            if ("arm32".equals(System.getenv("target"))) {
+                System.out.println("return armeabi");
+                return ELFOSABI_ARM_AEABI;
+            }
             return ELFOSABI_SYSV; // FIXME: query system
         }
     }
@@ -438,6 +444,9 @@ public class ELFObjectFile extends ObjectFile {
         }
 
         public static ELFClass getSystemNativeValue() {
+            if ("arm32".equals(System.getenv("target"))) {
+                return ELFCLASS32;
+            }
             return ELFCLASS64; // FIXME: query system
         }
     }
@@ -530,6 +539,7 @@ public class ELFObjectFile extends ObjectFile {
 
             public void write(OutputAssembler out) {
                 System.out.println("[JVDBG] ELFOUT WRITE\n\n\n");
+                System.out.println("[JVDBG] type = "+type+", machine = "+machine+", version = "+version);
                 Thread.dumpStack();
                 ident.write(out);
                 // FIXME: the following is specific to 64-bit ELF files
@@ -1085,6 +1095,9 @@ public class ELFObjectFile extends ObjectFile {
     }
 
     public char getVersion() {
+        System.out.println("[JVDBG] getVersion called, return "+version);
+        Thread.dumpStack();
+
         return version;
     }
 
@@ -1093,7 +1106,9 @@ public class ELFObjectFile extends ObjectFile {
     }
 
     public int getAbiVersion() {
-        return abiVersion;
+        System.out.println("[JVDBG] GETABIVERSION asked");
+        Thread.dumpStack();
+        return 5;//abiVersion;
     }
 
     public ELFClass getFileClass() {
