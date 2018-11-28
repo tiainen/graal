@@ -71,6 +71,13 @@ public interface Platform {
     interface AMD64 extends Platform {
     }
 
+    /**
+     * Supported architecture: ARM 64-bit.
+     *
+     */
+    interface AARCH64 extends Platform {
+    }
+
     /*
      * The standard operating systems that we support.
      */
@@ -89,6 +96,13 @@ public interface Platform {
      * @since 1.0
      */
     interface DARWIN extends Platform {
+    }
+
+    /**
+     * Supported operating system: iOS
+     *
+     */
+    interface IOS extends Platform {
     }
 
     /**
@@ -116,6 +130,16 @@ public interface Platform {
          * @since 1.0
          */
         public LINUX_AMD64() {
+        }
+    }
+
+    final class IOS_AMD64 implements IOS, AMD64 {
+        public IOS_AMD64() {
+        }
+    }
+
+    final class IOS_AARCH64 implements IOS, AARCH64 {
+        public IOS_AARCH64() {
         }
     }
 

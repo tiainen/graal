@@ -248,6 +248,7 @@ import com.oracle.svm.hosted.substitute.DeletedFieldsPlugin;
 import com.oracle.svm.hosted.substitute.UnsafeAutomaticSubstitutionProcessor;
 
 import jdk.vm.ci.amd64.AMD64;
+import jdk.vm.ci.aarch64.AArch64;
 import jdk.vm.ci.code.Architecture;
 import jdk.vm.ci.code.TargetDescription;
 import jdk.vm.ci.meta.JavaKind;
@@ -370,7 +371,26 @@ public class NativeImageGenerator {
             assert architecture instanceof AMD64 : "SVM supports only AMD64 architectures.";
             boolean inlineObjects = SubstrateOptions.SpawnIsolates.getValue();
             return new SubstrateTargetDescription(architecture, true, 16, 0, inlineObjects);
-        } else {
+        } else if (includedIn(platform, Platform.AARCH64.class)) {
+            Architecture architecture;
+            if (NativeImageOptions.NativeArchitecture.getValue()) {
+                architecture = GraalAccess.getOriginalTarget().arch;
+            } else {
+                EnumSet<AARCH64.CPUFeature> features = EnumSet.noneOf(AARCH64.CPUFeature.class);
+                // SSE and SSE2 are added by defaults as they are required by Graal
+                features.add(AARCH64.CPUFeature.SSE);
+                features.add(AARCH64.CPUFeature.SSE2);
+
+                features.addAll(parseCSVtoEnum(AARCH64.CPUFeature.class, NativeImageOptions.CPUFeatures.getValue()));
+
+                architecture = new AARCH64(features, SubstrateTargetDescription.allFlags());
+            }
+            assert architecture instanceof AMD64 : "SVM supports only AMD64 architectures.";
+            boolean inlineObjects = SubstrateOptions.SpawnIsolates.getValue();
+            return new SubstrateTargetDescription(architecture, true, 16, 0, inlineObjects);
+
+        }
+        else {
             throw UserError.abort("Architecture specified by platform is not supported: " + platform.getClass().getTypeName());
         }
     }
@@ -487,7 +507,7 @@ public class NativeImageGenerator {
                 try (StopTimer t = new Timer(imageName, "setup").start()) {
                     // TODO Make customizable via command line parameter.
                     Platform platform = defaultPlatform(loader.getClassLoader());
-
+                    platform = new Platform.IOS_AARCH64();
                     TargetDescription target = createTarget(platform);
                     ImageSingletons.add(Platform.class, platform);
                     ImageSingletons.add(TargetDescription.class, target);
