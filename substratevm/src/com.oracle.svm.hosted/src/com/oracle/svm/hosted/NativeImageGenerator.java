@@ -377,15 +377,11 @@ public class NativeImageGenerator {
                 architecture = GraalAccess.getOriginalTarget().arch;
             } else {
                 EnumSet<AARCH64.CPUFeature> features = EnumSet.noneOf(AARCH64.CPUFeature.class);
-                // SSE and SSE2 are added by defaults as they are required by Graal
-                features.add(AARCH64.CPUFeature.SSE);
-                features.add(AARCH64.CPUFeature.SSE2);
 
                 features.addAll(parseCSVtoEnum(AARCH64.CPUFeature.class, NativeImageOptions.CPUFeatures.getValue()));
 
                 architecture = new AARCH64(features, SubstrateTargetDescription.allFlags());
             }
-            assert architecture instanceof AMD64 : "SVM supports only AMD64 architectures.";
             boolean inlineObjects = SubstrateOptions.SpawnIsolates.getValue();
             return new SubstrateTargetDescription(architecture, true, 16, 0, inlineObjects);
 
