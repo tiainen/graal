@@ -26,6 +26,7 @@
 package com.oracle.svm.hosted.image;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -113,6 +114,30 @@ public abstract class NativeBootImageViaCC extends NativeBootImage {
         }
     }
 
+
+    class DarwinArmCCLinkerInvocation extends CCLinkerInvocation {
+
+        @Override
+        protected void addOneSymbolAliasOption(List<String> cmd, Entry<String, String> ent) {
+            cmd.add("-Wl,-alias," + ent.getValue() + "," + ent.getKey());
+        }
+
+        @Override
+        protected void setOutputKind(List<String> cmd) {
+            switch (kind) {
+                case STATIC_EXECUTABLE:
+                    break;
+                case SHARED_LIBRARY:
+                    cmd.add("-shared");
+                    if (Platform.includedIn(Platform.DARWIN.class)) {
+                        cmd.add("-undefined");
+                        cmd.add("dynamic_lookup");
+                    }
+                    break;
+            }
+        }
+    }
+
     class WindowsCCLinkerInvocation extends CCLinkerInvocation {
 
         WindowsCCLinkerInvocation() {
@@ -165,6 +190,8 @@ public abstract class NativeBootImageViaCC extends NativeBootImage {
         switch (ObjectFile.getNativeFormat()) {
             case MACH_O:
                 inv = new DarwinCCLinkerInvocation();
+                inv = new DarwinArmCCLinkerInvocation();
+
                 break;
             case PECOFF:
                 inv = new WindowsCCLinkerInvocation();
@@ -217,7 +244,21 @@ public abstract class NativeBootImageViaCC extends NativeBootImage {
                     throw new RuntimeException("Failed to create Object file " + e);
                 }
             } else {
-                write(tempDirectory.resolve(imageName + ObjectFile.getFilenameSuffix()));
+                Path objFilePath = tempDirectory.resolve(imageName + ObjectFile.getFilenameSuffix());
+                write(objFilePath);
+                File dest = new File("/tmp/"+imageName+ObjectFile.getFilenameSuffix());
+                try {
+                    Files.copy(objFilePath, dest.toPath());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            System.out.println("[JVDBG] OBJ created at , wait 5 seconds now");
+            try {
+                Thread.sleep(5000);
+                return null;
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
             // 2. run a command to make an executable of it
             int status;
@@ -234,6 +275,7 @@ public abstract class NativeBootImageViaCC extends NativeBootImage {
                     inv = fn.apply(inv);
                 }
                 List<String> cmd = inv.getCommand();
+                System.out.println("[JVDBG] invoker: "+cmd);
                 StringBuilder sb = new StringBuilder("Running command:");
                 for (String s : cmd) {
                     sb.append(' ');
@@ -265,6 +307,7 @@ public abstract class NativeBootImageViaCC extends NativeBootImage {
                 }
                 return inv.getOutputFile();
             } catch (Exception ex) {
+                ex.printStackTrace();
                 throw new RuntimeException("host C compiler or linker does not seem to work: " + ex.toString() + "\n\n" + cmdstr + "\n\n" + outputstr);
             }
         }

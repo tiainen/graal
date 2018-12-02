@@ -71,7 +71,8 @@ public final class MachOObjectFile extends ObjectFile {
    // MachOCpuType cpuType = MachOCpuType.X86_64; // FIXME: smarter defaults
     MachOCpuType cpuType = MachOCpuType.AARCH64;
 
-    int cpuSubType = 3; // FIXME: what does this mean? + smarter defaults?
+//    int cpuSubType = 3; // FIXME: what does this mean? + smarter defaults?
+int cpuSubType = 0;
 
     private final MachOHeader header;
 
@@ -2272,6 +2273,7 @@ public final class MachOObjectFile extends ObjectFile {
     }
 
     public void setCpuType(MachOCpuType cpuType) {
+        System.out.println("[JVDBG] set cpu type to "+cpuType);
         this.cpuType = cpuType;
     }
 

@@ -69,7 +69,17 @@ public abstract class AbstractBootImage {
             }
         },
         EXECUTABLE(true),
-        STATIC_EXECUTABLE(true);
+        STATIC_EXECUTABLE(true),
+        STATIC_LIBRARY(false) {
+            @Override
+            public String getFilenameSuffix() {
+                return ".a";
+            }
+            @Override
+            public String getFilenamePrefix() {
+                return "lib";
+            }
+        };
 
         public final boolean executable;
 

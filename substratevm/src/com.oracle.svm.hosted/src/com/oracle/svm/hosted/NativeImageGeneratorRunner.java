@@ -78,7 +78,9 @@ public class NativeImageGeneratorRunner implements ImageBuildTask {
     private volatile NativeImageGenerator generator;
 
     public static void main(String[] args) {
+        System.out.println("[JVDBG] NativeImageGenerator 1");
         ArrayList<String> arguments = new ArrayList<>(Arrays.asList(args));
+        System.out.println("[JVDBG] ARGS = "+arguments);
         final String[] classpath = extractImageClassPath(arguments);
         int watchPID = extractWatchPID(arguments);
         if (watchPID >= 0) {

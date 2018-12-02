@@ -67,22 +67,22 @@ class MachORelocationElement extends MachOObjectFile.LinkEditElement {
     }
 
     public void add(RelocationInfo rec) {
-        System.out.println("[JVDBG] ADD RELOC1");
+    //    System.out.println("[JVDBG] ADD RELOC1");
         if (infos.putIfAbsent(rec, rec) == null) {
             relocatedSections.add(rec.getRelocatedSection());
         }
     }
 
     public boolean relocatesSegment(Segment64Command seg) {
-        System.out.println("[JVDBG] ADD RELOC2");
-        Thread.dumpStack();
+      //  System.out.println("[JVDBG] ADD RELOC2");
+     //   Thread.dumpStack();
         return seg.elementsInSegment.stream().anyMatch(e -> e instanceof MachOSection && relocatedSections.contains(e));
     }
 
     @Override
     public byte[] getOrDecideContent(Map<Element, LayoutDecisionMap> alreadyDecided, byte[] contentHint) {
 
-        System.out.println("[JVDBG] ADD RELOC3");
+     //   System.out.println("[JVDBG] ADD RELOC3");
         OutputAssembler out = AssemblyBuffer.createOutputAssembler(getOwner().getByteOrder());
         for (RelocationInfo rec : infos.keySet()) {
             rec.write(out, alreadyDecided);
@@ -184,6 +184,7 @@ final class RelocationInfo implements RelocationRecord, RelocationMethod {
      * @param symbolName the symbol against which to relocate
      */
     RelocationInfo(MachORelocationElement containingElement, MachOSection relocatedSection, int offset, int requestedLength, RelocationKind kind, String symbolName, boolean asLocalReloc) {
+        System.out.println("[JVDBG] reloc info created for kind "+kind+" and sn = "+symbolName);
         this.containingElement = containingElement;
         this.relocatedSection = relocatedSection;
         this.sectionOffset = offset; // gets turned into a vaddr on write-out
@@ -212,12 +213,13 @@ final class RelocationInfo implements RelocationRecord, RelocationMethod {
     }
 
     public static int getEncodedSize() {
+       // System.out.println("[JVDBG] encoded size asked");
         return 8;
     }
 
     public void write(OutputAssembler oa, @SuppressWarnings("unused") Map<Element, LayoutDecisionMap> alreadyDecided) {
 
-       // System.out.println("[JVDBG] ADD RELOC4");
+     //   System.out.println("[JVDBG] ADD RELOC4");
         /* We need to convert in-section offsets to vaddrs if we are writing dynamic object. */
         // "extern" means symbolNum is a symbol not a section number
         int symbolNum;
@@ -304,6 +306,7 @@ final class RelocationInfo implements RelocationRecord, RelocationMethod {
     }
 
     private int getMachORelocationType() {
+        System.out.println("[JVDBG] reloc type asked, cpu = "+getRelocatedSection().getOwner().cpuType+" and kind = "+kind);
         switch (getRelocatedSection().getOwner().cpuType) {
             case X86_64:
                 switch (kind) {
@@ -318,11 +321,13 @@ final class RelocationInfo implements RelocationRecord, RelocationMethod {
                         throw new IllegalArgumentException("unknown relocation kind: " + kind);
                 }
             case AARCH64:
+               // System.out.println("RELOCATION required for kind = "+kind);
                 switch (kind) {
                     case DIRECT:
-                        return X86_64Reloc.UNSIGNED.getValue();
+                        return AARCH64Reloc.UNSIGNED.getValue();
                     case PC_RELATIVE:
-                        return X86_64Reloc.SIGNED.getValue();
+                        Thread.dumpStack();
+                        return AARCH64Reloc.GOT_LOAD_PAGE21.getValue();
                     case PROGRAM_BASE:
                         throw new IllegalArgumentException("Mach-O does not support PROGRAM_BASE relocations");
                     default:
