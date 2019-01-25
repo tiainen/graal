@@ -495,7 +495,7 @@ public final class NativeImageHeap {
             return references ? readOnlyReference : readOnlyPrimitive;
         } else {
             if (relocatable) {
-                VMError.shouldNotReachHere("Object with relocatable pointers must be immutable: " + object);
+                // VMError.shouldNotReachHere("Object with relocatable pointers must be immutable: " + object);
             }
             return references ? writableReference : writablePrimitive;
         }

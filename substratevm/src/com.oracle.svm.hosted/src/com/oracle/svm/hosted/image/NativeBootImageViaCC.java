@@ -262,6 +262,9 @@ public abstract class NativeBootImageViaCC extends NativeBootImage {
                     sb.append(s);
                 }
                 cmdstr = sb.toString();
+                String mainSymbolNameStem = NativeBootImage.globalSymbolNameForMethod(NativeBootImage.mainEntryPoint);
+
+                System.err.println("LINKER CMD: "+cmdstr);
                 try (DebugContext.Scope s = debug.scope("InvokeCC")) {
                     debug.log("%s", sb);
 
