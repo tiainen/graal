@@ -262,7 +262,6 @@ public abstract class NativeBootImageViaCC extends NativeBootImage {
                     sb.append(s);
                 }
                 cmdstr = sb.toString();
-                String mainSymbolNameStem = NativeBootImage.globalSymbolNameForMethod(NativeBootImage.mainEntryPoint);
 
                 System.err.println("LINKER CMD: "+cmdstr);
                 try (DebugContext.Scope s = debug.scope("InvokeCC")) {
@@ -290,6 +289,7 @@ public abstract class NativeBootImageViaCC extends NativeBootImage {
                 }
                 return inv.getOutputFile();
             } catch (Exception ex) {
+                ex.printStackTrace();
                 throw new RuntimeException("host C compiler or linker does not seem to work: " + ex.toString() + "\n\n" + cmdstr + "\n\n" + outputstr);
             }
         }
