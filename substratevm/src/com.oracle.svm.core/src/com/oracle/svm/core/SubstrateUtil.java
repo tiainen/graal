@@ -668,7 +668,6 @@ public class SubstrateUtil {
      */
     @Platforms(Platform.HOSTED_ONLY.class)
     public static String mangleName(String methodName) {
-        System.err.println("NEED TO MANGLENAME FOR "+methodName);
         StringBuilder out = new StringBuilder();
         for (int i = 0; i < methodName.length(); ++i) {
             char c = methodName.charAt(i);
