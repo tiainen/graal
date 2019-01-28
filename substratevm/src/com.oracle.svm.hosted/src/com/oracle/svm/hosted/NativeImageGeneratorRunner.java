@@ -42,6 +42,7 @@ import java.util.TimerTask;
 import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Stream;
 
+import com.oracle.svm.core.SubstrateUtil;
 import org.graalvm.compiler.debug.DebugContext;
 import org.graalvm.compiler.options.OptionValues;
 import org.graalvm.compiler.printer.GraalDebugHandlersFactory;
@@ -222,7 +223,8 @@ public class NativeImageGeneratorRunner implements ImageBuildTask {
             JavaMainSupport javaMainSupport = null;
 
             AbstractBootImage.NativeImageKind k = AbstractBootImage.NativeImageKind.valueOf(NativeImageOptions.Kind.getValue(parsedHostedOptions));
-            if (k.executable) {
+            if (Math.PI < 4) {
+            //    if (k.executable) {
                 String className = NativeImageOptions.Class.getValue(parsedHostedOptions);
                 if (className == null || className.length() == 0) {
                     throw UserError.abort("Must specify main entry point class when building " + k + " native image. " +
@@ -277,7 +279,9 @@ public class NativeImageGeneratorRunner implements ImageBuildTask {
                     throw UserError.abort("Main entry point must have signature 'int main(int argc, CCharPointerPointer argv)'.");
                 }
             }
-
+            System.err.println("MAINENTRYPOINT = "+mainEntryPoint);
+            String ff = SubstrateUtil.uniqueShortName(mainEntryPoint);
+            System.err.println("FF = "+ff);
             int maxConcurrentThreads = NativeImageOptions.getMaximumNumberOfConcurrentThreads(parsedHostedOptions);
             analysisExecutor = Inflation.createExecutor(debug, NativeImageOptions.getMaximumNumberOfAnalysisThreads(parsedHostedOptions));
             compilationExecutor = Inflation.createExecutor(debug, maxConcurrentThreads);

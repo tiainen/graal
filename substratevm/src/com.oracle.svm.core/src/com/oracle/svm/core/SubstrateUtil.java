@@ -626,6 +626,7 @@ public class SubstrateUtil {
      * fully qualified method name, which ensures uniqueness.
      */
     public static String uniqueShortName(Member m) {
+        System.err.println("Need to get uniqueShortName for "+m);
         StringBuilder fullName = new StringBuilder();
         fullName.append(m.getDeclaringClass().getName()).append(".");
         if (m instanceof Constructor) {
@@ -643,13 +644,13 @@ public class SubstrateUtil {
                 fullName.append(((Method) m).getReturnType().getName());
             }
         }
-
+        System.err.println("fullname for that method = "+fullName+" and method name = "+m.getName());
         return stripPackage(m.getDeclaringClass().getTypeName()) + "_" +
                         (m instanceof Constructor ? "constructor" : m.getName()) + "_" +
                         SubstrateUtil.digest(fullName.toString());
     }
 
-    private static String stripPackage(String qualifiedClassName) {
+    public static String stripPackage(String qualifiedClassName) {
         return qualifiedClassName.substring(qualifiedClassName.lastIndexOf(".") + 1);
     }
 
@@ -667,6 +668,7 @@ public class SubstrateUtil {
      */
     @Platforms(Platform.HOSTED_ONLY.class)
     public static String mangleName(String methodName) {
+        System.err.println("NEED TO MANGLENAME FOR "+methodName);
         StringBuilder out = new StringBuilder();
         for (int i = 0; i < methodName.length(); ++i) {
             char c = methodName.charAt(i);

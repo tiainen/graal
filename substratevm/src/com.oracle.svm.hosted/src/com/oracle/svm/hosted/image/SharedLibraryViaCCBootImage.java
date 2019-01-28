@@ -29,6 +29,8 @@ import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.List;
 
+import com.oracle.objectfile.ObjectFile;
+import com.oracle.svm.core.LinkerInvocation;
 import org.graalvm.compiler.debug.DebugContext;
 
 import com.oracle.svm.core.util.VMError;
@@ -40,9 +42,12 @@ import com.oracle.svm.hosted.meta.HostedUniverse;
 
 public class SharedLibraryViaCCBootImage extends NativeBootImageViaCC {
 
+    private HostedMethod mep;
+
     public SharedLibraryViaCCBootImage(HostedUniverse universe, HostedMetaAccess metaAccess, NativeLibraries nativeLibs, NativeImageHeap heap, NativeImageCodeCache codeCache,
                     List<HostedMethod> entryPoints, HostedMethod mainEntryPoint, ClassLoader imageLoader) {
         super(NativeImageKind.SHARED_LIBRARY, universe, metaAccess, nativeLibs, heap, codeCache, entryPoints, mainEntryPoint, imageLoader);
+   this.mep = mainEntryPoint;
     }
 
     @Override
@@ -56,5 +61,17 @@ public class SharedLibraryViaCCBootImage extends NativeBootImageViaCC {
         writeHeaderFiles(outputDirectory, imageName, false);
         writeHeaderFiles(outputDirectory, imageName, true);
         return imagePath;
+    }
+
+    @Override
+    LinkerInvocation getLinkerInvocation(Path outputDirectory, Path tempDirectory, String imageName) {
+        String mainSymbolNameStem = NativeBootImage.globalSymbolNameForMethod(mep);
+        // HACK: guess main symbol name using hacked-up knowledge of object file format
+        String mainSymbolAlias = (ObjectFile.getNativeFormat() == ObjectFile.Format.MACH_O) ? "_main" : "main";
+        String mainSymbolName = (ObjectFile.getNativeFormat() == ObjectFile.Format.MACH_O) ? "_" + mainSymbolNameStem : mainSymbolNameStem;
+        LinkerInvocation inv = super.getLinkerInvocation(outputDirectory, tempDirectory, imageName);
+        inv.addSymbolAlias(mainSymbolAlias, mainSymbolName);
+        System.err.println("mainsymbolname = "+mainSymbolName);
+        return inv;
     }
 }
