@@ -70,16 +70,16 @@ public class SharedLibraryViaCCBootImage extends NativeBootImageViaCC {
         writeHeaderFiles(outputDirectory, imageName, inv.getSymbolAliases(), true);
         return inv;
     }
-
-    @Override
-    LinkerInvocation getLinkerInvocation(Path outputDirectory, Path tempDirectory, String imageName) {
-        String mainSymbolNameStem = NativeBootImage.globalSymbolNameForMethod(mep);
-        // HACK: guess main symbol name using hacked-up knowledge of object file format
-        String mainSymbolAlias = (ObjectFile.getNativeFormat() == ObjectFile.Format.MACH_O) ? "_main" : "main";
-        String mainSymbolName = (ObjectFile.getNativeFormat() == ObjectFile.Format.MACH_O) ? "_" + mainSymbolNameStem : mainSymbolNameStem;
-        LinkerInvocation inv = super.getLinkerInvocation(outputDirectory, tempDirectory, imageName);
-        inv.addSymbolAlias(mainSymbolAlias, mainSymbolName);
-        System.err.println("mainsymbolname = "+mainSymbolName);
-        return inv;
-    }
+//
+//    @Override
+//    LinkerInvocation getLinkerInvocation(Path outputDirectory, Path tempDirectory, String imageName) {
+//        String mainSymbolNameStem = NativeBootImage.globalSymbolNameForMethod(mep);
+//        // HACK: guess main symbol name using hacked-up knowledge of object file format
+//        String mainSymbolAlias = (ObjectFile.getNativeFormat() == ObjectFile.Format.MACH_O) ? "_main" : "main";
+//        String mainSymbolName = (ObjectFile.getNativeFormat() == ObjectFile.Format.MACH_O) ? "_" + mainSymbolNameStem : mainSymbolNameStem;
+//        LinkerInvocation inv = super.getLinkerInvocation(outputDirectory, tempDirectory, imageName);
+//        inv.addSymbolAlias(mainSymbolAlias, mainSymbolName);
+//        System.err.println("mainsymbolname = "+mainSymbolName);
+//        return inv;
+//    }
 }
