@@ -38,6 +38,7 @@ import org.graalvm.compiler.replacements.nodes.UnaryMathIntrinsicNode.UnaryOpera
 import org.graalvm.nativeimage.ImageSingletons;
 import org.graalvm.nativeimage.LogHandler;
 import org.graalvm.nativeimage.c.function.CodePointer;
+import org.graalvm.util.DirectAnnotationAccess;
 import org.graalvm.word.LocationIdentity;
 import org.graalvm.word.Pointer;
 import org.graalvm.word.UnsignedWord;
@@ -66,7 +67,6 @@ public class SnippetRuntime {
     public static final SubstrateForeignCallDescriptor UNRESOLVED = findForeignCall(SnippetRuntime.class, "unresolved", true, LocationIdentity.any());
 
     public static final SubstrateForeignCallDescriptor UNWIND_EXCEPTION = findForeignCall(SnippetRuntime.class, "unwindException", true, LocationIdentity.any());
-    public static final SubstrateForeignCallDescriptor REPORT_UNHANDLED_EXCEPTION_RAW = findForeignCall(SnippetRuntime.class, "reportUnhandledExceptionRaw", true, LocationIdentity.any());
 
     /* Implementation of runtime calls defined in a VM-independent way by Graal. */
     public static final SubstrateForeignCallDescriptor REGISTER_FINALIZER = findForeignCall(SnippetRuntime.class, "registerFinalizer", true);
@@ -130,7 +130,7 @@ public class SnippetRuntime {
          * We cannot annotate methods from the JDK, but all other foreign call targets we want to be
          * annotated for documentation, and to avoid stripping.
          */
-        VMError.guarantee(declaringClass.getName().startsWith("java.lang") || foundMethod.getAnnotation(SubstrateForeignCallTarget.class) != null,
+        VMError.guarantee(declaringClass.getName().startsWith("java.lang") || DirectAnnotationAccess.isAnnotationPresent(foundMethod, SubstrateForeignCallTarget.class),
                         "Add missing @SubstrateForeignCallTarget to " + declaringClass.getName() + "." + methodName);
 
         return new SubstrateForeignCallDescriptor(descriptorName, foundMethod, isReexecutable, killedLocations);
@@ -274,8 +274,6 @@ public class SnippetRuntime {
         reportUnhandledExceptionRaw(exception);
     }
 
-    /** Foreign call: {@link #REPORT_UNHANDLED_EXCEPTION_RAW}. */
-    @SubstrateForeignCallTarget
     private static void reportUnhandledExceptionRaw(Throwable exception) {
         Log.log().string(exception.getClass().getName());
         String detail = JDKUtils.getRawMessage(exception);
