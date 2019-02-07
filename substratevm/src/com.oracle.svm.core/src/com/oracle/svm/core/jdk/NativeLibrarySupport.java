@@ -119,6 +119,7 @@ public final class NativeLibrarySupport {
     }
 
     private boolean loadLibrary0(File file, boolean asBuiltin) {
+        System.err.println("[JVDBG] loadlib0 for "+file+" and builtin? "+asBuiltin);
         if (asBuiltin && (libraryInitializer == null || !libraryInitializer.isBuiltinLibrary(file.getName()))) {
             return false;
         }

@@ -914,13 +914,17 @@ public class NativeImage {
         }
         command.addAll(createImageBuilderArgs(imageArgs, imagecp));
 
-        showVerboseMessage(isVerbose() || dryRun, "Executing [");
+        showVerboseMessage(isVerbose() || dryRun, "EXEcuting [");
         showVerboseMessage(isVerbose() || dryRun, command.stream().collect(Collectors.joining(" \\\n")));
         showVerboseMessage(isVerbose() || dryRun, "]");
 
         if (!dryRun) {
             try {
-                Process p = pb.inheritIO().start();
+                System.err.println("STarting buildImage");
+                pb.redirectErrorStream(true);
+                Process p = pb.start();
+//                Process p = pb.inheritIO().start();
+                mergeProcessOutput(p.getInputStream());
                 int exitStatus = p.waitFor();
                 if (exitStatus != 0) {
                     throw showError("Image building with exit status " + exitStatus);
@@ -1315,4 +1319,22 @@ public class NativeImage {
             }
         }
     }
+
+    protected void mergeProcessOutput(final InputStream is) {
+
+        Runnable r = () -> {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
+                String line;
+                while ( (line = reader.readLine()) != null) {
+                    System.err.println("[NI] " + line);
+                }
+            } catch (IOException ex) {
+                System.err.println( "Failed to merge process output");
+                ex.printStackTrace();
+            }
+        };
+        new Thread(r).start();
+    }
+
+
 }

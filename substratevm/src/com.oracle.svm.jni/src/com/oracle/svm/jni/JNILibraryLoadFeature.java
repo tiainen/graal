@@ -59,6 +59,8 @@ interface JNIOnLoadFunctionPointer extends CFunctionPointer {
 class JNILibraryInitializer implements LibraryInitializer {
     private static String getOnLoadName(String libName, boolean builtIn) {
         String name = "JNI_OnLoad";
+        System.err.println("[JVDBG] GETONLOADNAME FOR "+libName);
+        Thread.dumpStack();
         if (builtIn) {
             return name + "_" + libName;
         }
@@ -72,6 +74,7 @@ class JNILibraryInitializer implements LibraryInitializer {
         }
         String onLoadName = getOnLoadName(libName, true);
         PointerBase onLoad = PlatformNativeLibrarySupport.singleton().findBuiltinSymbol(onLoadName);
+        System.err.println("isbuiltinlibrary got a pointer to onload of null? "+onLoad.isNull());
         return onLoad.isNonNull();
     }
 
