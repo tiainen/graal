@@ -38,59 +38,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.oracle.truffle.api.test.polyglot;
+package com.oracle.truffle.api.instrumentation.test;
 
+import com.oracle.truffle.api.CallTarget;
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.Truffle;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.security.CodeSource;
-import java.security.ProtectionDomain;
-import org.graalvm.polyglot.Engine;
-import org.junit.After;
-import static org.junit.Assert.assertNotNull;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.RootNode;
 
-public class SeparatedClassLoadersTest {
-    private ClassLoader loader;
+public class CompileImmediatelyCheck {
 
-    @Before
-    public void storeLoader() {
-        loader = Thread.currentThread().getContextClassLoader();
+    public static boolean isCompileImmediately() {
+        CallTarget target = Truffle.getRuntime().createCallTarget(new RootNode(null) {
+            @Override
+            public Object execute(VirtualFrame frame) {
+                return CompilerDirectives.inCompiledCode();
+            }
+        });
+        return (boolean) target.call();
     }
 
-    @Test
-    public void sdkAndTruffleAPIInSeparateClassLoaders() throws Exception {
-        final ProtectionDomain sdkDomain = Engine.class.getProtectionDomain();
-        Assume.assumeNotNull(sdkDomain);
-        final CodeSource sdkSource = sdkDomain.getCodeSource();
-        Assume.assumeNotNull(sdkSource);
-        URL sdkURL = sdkSource.getLocation();
-        Assume.assumeNotNull(sdkURL);
-
-        ProtectionDomain truffleDomain = Truffle.class.getProtectionDomain();
-        Assume.assumeNotNull(truffleDomain);
-        CodeSource truffleSource = truffleDomain.getCodeSource();
-        Assume.assumeNotNull(truffleSource);
-
-        URL truffleURL = truffleSource.getLocation();
-        Assume.assumeNotNull(truffleURL);
-
-        ClassLoader parent = Engine.class.getClassLoader().getParent();
-
-        URLClassLoader sdkLoader = new URLClassLoader(new URL[]{sdkURL}, parent);
-        URLClassLoader truffleLoader = new URLClassLoader(new URL[]{truffleURL}, sdkLoader);
-        Thread.currentThread().setContextClassLoader(truffleLoader);
-
-        Class<?> engineClass = sdkLoader.loadClass(Engine.class.getName());
-        Object engine = engineClass.getMethod("create").invoke(null);
-
-        assertNotNull("Engine has been created", engine);
-    }
-
-    @After
-    public void resetLoader() {
-        Thread.currentThread().setContextClassLoader(loader);
-    }
 }
