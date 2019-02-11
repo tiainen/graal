@@ -954,6 +954,7 @@ public class NativeImage {
     }
 
     public static void build(BuildConfiguration config) {
+System.err.println("[JVDBG] NativeImage, build with config "+config+" and IS_AOT = "+IS_AOT);
         NativeImage nativeImage = IS_AOT ? NativeImageServer.create(config) : new NativeImage(config);
         if (config.getBuildArgs().isEmpty()) {
             nativeImage.showMessage(usageText);

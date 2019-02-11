@@ -125,6 +125,14 @@ public abstract class SubstitutionProcessor {
 
         @Override
         public ResolvedJavaMethod lookup(ResolvedJavaMethod method) {
+            if (method == null) {
+                System.err.println("WARNING, METHOD = null");
+            }
+            ResolvedJavaMethod l1 = first.lookup(method);
+            if (l1 == null) {
+                System.err.println("WARNING!!! l1 = null");
+                return second.lookup(method);
+            }
             return second.lookup(first.lookup(method));
         }
 

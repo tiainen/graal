@@ -119,10 +119,15 @@ public class AnnotationSupport extends CustomSubstitution<AnnotationSubstitution
 
     @Override
     public ResolvedJavaMethod lookup(ResolvedJavaMethod method) {
+        // System.err.println("AnnotationSupport, lookup "+method);
         if (isAnnotation(method.getDeclaringClass())) {
             AnnotationSubstitutionType declaringClass = getSubstitution(method.getDeclaringClass());
             AnnotationSubstitutionMethod result = declaringClass.getSubstitutionMethod(method);
             assert result != null && result.original.equals(method);
+            // System.err.println("AnnotationSupport, lookup will return "+result+", declaringClass = "+declaringClass);
+            if (result == null) {
+                System.err.println("WHOOOPS");
+            }
             return result;
         }
         return method;
@@ -144,6 +149,7 @@ public class AnnotationSupport extends CustomSubstitution<AnnotationSubstitution
             for (ResolvedJavaMethod originalMethod : type.getDeclaredMethods()) {
                 AnnotationSubstitutionMethod substitutionMethod;
                 String methodName = canonicalMethodName(originalMethod);
+                // System.err.println("annotationsupport, methodname = "+methodName);
                 if (methodName.equals("equals")) {
                     substitutionMethod = new AnnotationEqualsMethod(originalMethod);
                 } else if (methodName.equals("hashCode")) {

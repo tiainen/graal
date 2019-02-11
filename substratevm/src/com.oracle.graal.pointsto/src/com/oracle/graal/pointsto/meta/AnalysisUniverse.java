@@ -196,7 +196,9 @@ public class AnalysisUniverse implements Universe {
         assert !(rawType instanceof AnalysisType) : "lookupAllowUnresolved does not support analysis types.";
 
         ResolvedJavaType hostType = (ResolvedJavaType) rawType;
+     //   System.err.println("AnalysisUniverse, hosttype = "+hostType);
         ResolvedJavaType type = substitutions.lookup(hostType);
+      //  System.err.println("AnalysisUniverseAftersubs, type = "+type);
         AnalysisType result = optionalLookup(type);
         if (result == null) {
             result = createType(type);
