@@ -67,6 +67,11 @@ suite = {
       "releasesUrl": "https://curio.ssw.jku.at/nexus/content/repositories/releases",
       "licenses" : ["GPLv2-CPE", "UPL", "BSD-new"]
     },
+    "gluon" : {
+      "snapshotsUrl" : "http://nexus.gluonhq.com/nexus/content/repositories/snapshots/",
+      "releasesUrl" : "http://nexus.gluonhq.com/nexus/content/repositories/gluon-private-releases/",
+      "licenses" : ["GPLv2-CPE", "UPL", "BSD-new"]
+    }
   },
   "snippetsPattern" : ".*(Snippets|doc-files).*",
   "defaultLicense" : "UPL",
